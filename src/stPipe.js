@@ -8,24 +8,35 @@ ng.module('smart-table')
       link: {
 
         pre: function (scope, element, attrs, ctrl) {
+          function initializeCustomPipe(){
+            var initialPipe = null;
 
-          var pipePromise = null;
+            return function(pipe, skipPipe){
+              if (ng.isFunction(pipe)) {
+                ctrl.preventPipeOnWatch();
 
-          if (ng.isFunction(scope.stPipe)) {
-            ctrl.preventPipeOnWatch();
-            ctrl.pipe = function () {
+                if (!initialPipe){
+                  initialPipe = ctrl.pipe;
+                }
 
-              if (pipePromise !== null) {
-                $timeout.cancel(pipePromise)
+                ctrl.pipe = function () {
+                  return pipe(ctrl.tableState(), ctrl);
+                };
+
+                if (skipPipe !== true){
+                  ctrl.pipe();
+                }
+              } else if (initialPipe){
+                ctrl.pipe = initialPipe;
               }
-
-              pipePromise = $timeout(function () {
-                scope.stPipe(ctrl.tableState(), ctrl);
-              }, config.pipe.delay);
-
-              return pipePromise;
-            }
+            };
           }
+
+          var pipeInitializer = initializeCustomPipe();
+
+          pipeInitializer(scope.stPipe, true);
+
+          scope.$watch('stPipe', pipeInitializer);
         },
 
         post: function (scope, element, attrs, ctrl) {

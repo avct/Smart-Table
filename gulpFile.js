@@ -51,7 +51,7 @@ gulp.task('concat', function () {
 
 gulp.task('test', ['karma-CI']);
 
-gulp.task('build',['test', 'uglify', 'concat'], function () {
+gulp.task('build',['uglify', 'concat'], function () {
 
     var version = packageJson.version;
     var string = '/** \n* @version ' + version + '\n* @license MIT\n*/\n';
